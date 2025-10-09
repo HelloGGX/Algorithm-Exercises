@@ -379,3 +379,22 @@ if __name__ == "__main__":
 练习混淆矩阵和ROC绘制。
 """
 
+"""
+(图论-Dijkstra) 你负责一个航空公司的航班路径规划。给定一个航班网络，其中包含 N 个机场（从 0 到 N-1 编号）和 M 条单向航线。每条航线 (u, v, w) 代表从机场 u 到机场 v 需要 w 的成本（例如飞行时间）。
+
+任务：实现一个程序，找出从指定的 出发机场 S 到 目标机场 D 的成本最低的航线。
+
+输出：构成最低成本航线的机场序列（从 S 到 D）以及总成本。
+
+要求：必须使用优先队列（最小堆）来优化Dijkstra算法的效率。如果无法从 S 到达 D，则返回相应的提示。
+"""
+
+import heapq
+
+def dijkstra_flight_path(N, flights, S, D):
+    # 构建图的邻接表表示
+    graph = {i: [] for i in range(N)}
+    for u, v, w in flights:
+        graph[u].append((v, w))
+        
+        
