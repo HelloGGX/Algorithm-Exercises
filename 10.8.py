@@ -278,6 +278,96 @@ def binary_search_first(arr, target):
 
 
 """
+设计链表
+"""
+class ListNode:
+    def __init__(self, val=0):
+        self.val = val
+        self.next = None
+        self.prev = None
+
+class MyLinkedList:
+    def __init__(self):
+        """初始化双向链表，带哨兵节点"""
+        self.head = ListNode(0)
+        self.tail = ListNode(0)
+        self.head.next = self.tail
+        self.tail.prev = self.head
+        self.size = 0
+
+    def get(self, index: int) -> int:
+        """获取第index个节点的值"""
+        if index < 0 or index >= self.size:
+            return -1
+        current = self.head.next
+        for _ in range(index):
+            current = current.next
+        return current.val
+
+    def addAtHead(self, val: int) -> None:
+        """头部添加节点"""
+        new_node = ListNode(val)
+        new_node.next = self.head.next
+        new_node.prev = self.head
+        self.head.next.prev = new_node
+        self.head.next = new_node
+        self.size += 1
+
+    def addAtTail(self, val: int) -> None:
+        """尾部添加节点"""
+        new_node = ListNode(val)
+        new_node.prev = self.tail.prev
+        new_node.next = self.tail
+        self.tail.prev.next = new_node
+        self.tail.prev = new_node
+        self.size += 1
+
+    def addAtIndex(self, index: int, val: int) -> None:
+        """在第index个位置添加节点"""
+        if index < 0 or index > self.size:
+            return
+        if index == 0:
+            self.addAtHead(val)
+            return
+        if index == self.size:
+            self.addAtTail(val)
+            return
+        current = self.head.next
+        for _ in range(index):
+            current = current.next
+        new_node = ListNode(val)
+        new_node.next = current
+        new_node.prev = current.prev
+        current.prev.next = new_node
+        current.prev = new_node
+        self.size += 1
+
+    def deleteAtIndex(self, index: int) -> None:
+        """删除第index个节点"""
+        if index < 0 or index >= self.size:
+            return
+        current = self.head.next
+        for _ in range(index):
+            current = current.next
+        current.prev.next = current.next
+        current.next.prev = current.prev
+        self.size -= 1
+
+# 测试代码
+if __name__ == "__main__":
+    ll = MyLinkedList()
+    ll.addAtHead(1)
+    ll.addAtTail(3)
+    ll.addAtIndex(1, 2)
+    print(ll.get(1))  # 输出: 2
+    ll.deleteAtIndex(1)
+    print(ll.get(1))  # 输出: 3
+    ll.deleteAtIndex(0)
+    ll.deleteAtIndex(0)
+    print(ll.get(0))  # 输出: -1
+
+
+"""
 练习题目4: 旅客满意度逻辑回归（机器学习，20分）
 题目描述：给定旅客数据集（CSV，特征：年龄、航班延误，标签：满意/不满意），实现数据预处理（缺失值均值填充、标准化），训练逻辑回归模型，预测测试集满意度。输出准确率、ROC曲线（AUC值）。比较不同学习率的效果。
 考察方向：数据预处理与模型训练（大纲指定逻辑回归/评估指标），模拟旅客分类。
@@ -289,3 +379,22 @@ def binary_search_first(arr, target):
 练习混淆矩阵和ROC绘制。
 """
 
+"""
+(图论-Dijkstra) 你负责一个航空公司的航班路径规划。给定一个航班网络，其中包含 N 个机场（从 0 到 N-1 编号）和 M 条单向航线。每条航线 (u, v, w) 代表从机场 u 到机场 v 需要 w 的成本（例如飞行时间）。
+
+任务：实现一个程序，找出从指定的 出发机场 S 到 目标机场 D 的成本最低的航线。
+
+输出：构成最低成本航线的机场序列（从 S 到 D）以及总成本。
+
+要求：必须使用优先队列（最小堆）来优化Dijkstra算法的效率。如果无法从 S 到达 D，则返回相应的提示。
+"""
+
+import heapq
+
+def dijkstra_flight_path(N, flights, S, D):
+    # 构建图的邻接表表示
+    graph = {i: [] for i in range(N)}
+    for u, v, w in flights:
+        graph[u].append((v, w))
+        
+        
