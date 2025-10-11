@@ -389,12 +389,125 @@ if __name__ == "__main__":
 要求：必须使用优先队列（最小堆）来优化Dijkstra算法的效率。如果无法从 S 到达 D，则返回相应的提示。
 """
 
+import collections
 import heapq
 
-def dijkstra_flight_path(N, flights, S, D):
-    # 构建图的邻接表表示
-    graph = {i: [] for i in range(N)}
-    for u, v, w in flights:
+def find_shortest_path(N, routes, S, D):
+    """
+    使用 Dijkstra 算法计算从起点 S 到终点 D 的最短路径。
+    
+    参数:
+    N (int): 机场总数（节点数）
+    routes (list of tuples): 航线列表，格式为 (u, v, w) -> 从 u 到 v 成本为 w
+    S (int): 起点机场编号
+    D (int): 终点机场编号
+    
+    返回:
+    tuple: (路径列表, 总成本) 或 (错误信息, -1)
+    """
+
+    # ------------------------------------------------------------------
+    # 第一步：准备工作 (Setup) - 建立邻接表来表示航线图
+    # ------------------------------------------------------------------
+    # [cite_start]考纲要求: 图结构 [cite: 6]
+    graph = collections.defaultdict(list)
+    for u, v, w in routes:
+        # 存储机场v以及到达它的成本w
         graph[u].append((v, w))
+
+    # ------------------------------------------------------------------
+    # 第二步：初始化仪表盘 (Initialization)
+    # ------------------------------------------------------------------
+    # distances 字典存储从起点 S 到各机场的已知最短成本
+    distances = {i: float('inf') for i in range(N)}
+    distances[S] = 0
+    
+    # 优先队列（最小堆）存储 (成本, 机场编号)，它将自动按成本排序
+    # [cite_start]这是对Dijkstra算法的关键优化，利用了树形结构（堆） [cite: 6]
+    priority_queue = [(0, S)]
+    
+    # previous_nodes 字典用于回溯最终路径
+    previous_nodes = {i: None for i in range(N)}
+
+    # ------------------------------------------------------------------
+    # 第三步：启动引擎 (The Main Loop) - 算法核心
+    # ------------------------------------------------------------------
+    # [cite_start]考纲要求: Dijkstra算法实现 [cite: 10]
+    while priority_queue:
+        # 1. 从队列中取出当前已知成本最小的机场
+        current_cost, current_airport = heapq.heappop(priority_queue)
+        
+        # 优化：如果取出的成本比已记录的成本还大，说明此节点已被更优路径处理过，跳过
+        if current_cost > distances[current_airport]:
+            continue
+            
+        # 2. 遍历该机场的所有邻居，执行“松弛”操作
+        for neighbor_airport, cost_to_neighbor in graph[current_airport]:
+            new_cost = current_cost + cost_to_neighbor
+            
+            # 如果经由当前机场到达邻居的成本更低
+            if new_cost < distances[neighbor_airport]:
+                # 更新最短成本
+                distances[neighbor_airport] = new_cost
+                # 记录路径来源
+                previous_nodes[neighbor_airport] = current_airport
+                # 将更新后的邻居推入优先队列
+                heapq.heappush(priority_queue, (new_cost, neighbor_airport))
+
+    # ------------------------------------------------------------------
+    # 第四步：回溯路径 (Path Reconstruction)
+    # ------------------------------------------------------------------
+    path = []
+    total_cost = distances[D]
+    
+    if total_cost == float('inf'):
+        return f"无法从机场 {S} 到达机场 {D}", -1
+    else:
+        current = D
+        while current is not None:
+            path.append(current)
+            current = previous_nodes[current]
+        # 列表反转得到从起点到终点的正确顺序
+        path.reverse()
+        return path, total_cost
+
+
+# ======================================================================
+#                            示例用法
+# ======================================================================
+if __name__ == '__main__':
+    # 假设有 6 个机场, 编号 0 到 5
+    N = 6
+    # 航线列表: (出发, 到达, 成本)
+    routes = [
+        (0, 1, 7), (0, 2, 9), (0, 5, 14),
+        (1, 2, 10), (1, 3, 15),
+        (2, 3, 11), (2, 5, 2),
+        (3, 4, 6),
+        (4, 5, 9)
+    ]
+    
+    start_airport = 0
+    destination_airport = 4
+
+    print(f"计算从机场 {start_airport} 到机场 {destination_airport} 的最低成本路径...")
+    
+    path, cost = find_shortest_path(N, routes, start_airport, destination_airport)
+
+    if cost != -1:
+        print(f"  -> 最短路径: {' -> '.join(map(str, path))}")
+        print(f"  -> 总成本: {cost}")
+    else:
+        print(f"  -> {path}")
+
+    # 期望输出:
+    #   -> 最短路径: 0 -> 2 -> 3 -> 4
+    #   -> 总成本: 26 
+        
+        
+        
+        
+
+                
         
         
