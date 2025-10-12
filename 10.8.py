@@ -388,13 +388,122 @@ if __name__ == "__main__":
 
 要求：必须使用优先队列（最小堆）来优化Dijkstra算法的效率。如果无法从 S 到达 D，则返回相应的提示。
 """
-
+import collections
 import heapq
 
 def dijkstra_flight_path(N, flights, S, D):
-    # 构建图的邻接表表示
-    graph = {i: [] for i in range(N)}
+    """
+    使用Dijkstra算法和优先队列寻找从S到D的最低成本航线。
+
+    参数:
+    N (int): 机场数量
+    flights (list of tuples): 航线列表, 每个元组为 (u, v, w)
+    S (int): 出发机场
+    D (int): 目标机场
+
+    返回:
+    一个元组，包含路径列表和总成本，或者在无法到达时返回提示信息。
+    """
+    # 1. 构建图的邻接表表示
+    # graph[u] = [(v1, w1), (v2, w2), ...]
+    graph = collections.defaultdict(list)
     for u, v, w in flights:
         graph[u].append((v, w))
+    
+    # 2. 初始化
+    # distances[i] 存储从 S 到 i 的当前已知最低成本
+    distances = [float('inf')] * N
+    # predecessors[i] 存储到达 i 的最短路径上的前一个节点
+    predecessors = [-1] * N
+    
+    # 起点到自身的成本为 0
+    distances[S] = 0
+    
+    # 优先队列，存储 (成本, 机场节点)
+    # 初始时只包含起点
+    pq = [(0, S)]
+    
+    # 3. 核心循环
+    while pq:
+        # 弹出当前已知距离起点最近的节点
+        current_cost, current_node = heapq.heappop(pq)
         
-        
+        # 如果这个节点是目标，我们可以提前结束（可选优化）
+        if current_node == D:
+            break
+            
+        # 这是一个重要的优化。如果弹出的成本比已记录的成本还大，
+        # 说明这是一个过时（stale）的条目，我们已经通过其他路径
+        # 找到了一个更短的方式到达 current_node，直接跳过。
+        if current_cost > distances[current_node]:
+            continue
+            
+        # 4. 松弛操作（Relaxation）
+        # 遍历当前节点的所有邻居
+        for neighbor, cost in graph[current_node]:
+            new_cost = current_cost + cost
+            
+            # 如果通过当前节点到达邻居的成本更低
+            if new_cost < distances[neighbor]:
+                # 更新到邻居的最低成本
+                distances[neighbor] = new_cost
+                # 记录路径：要想到达 neighbor，需要从 current_node 过来
+                predecessors[neighbor] = current_node
+                # 将更新后的邻居（和它的新成本）推入优先队列
+                heapq.heappush(pq, (new_cost, neighbor))
+                
+    # 5. 处理结果
+    # 如果目标机场的距离仍然是无穷大，说明无法从 S 到达 D
+    if distances[D] == float('inf'):
+        return "无法从机场 {} 到达机场 {}。".format(S, D), -1
+
+    # 6. 回溯路径
+    path = []
+    current = D
+    while current != -1:
+        path.append(current)
+        current = predecessors[current]
+    # 因为是从后往前追溯的，所以需要反转列表
+    path.reverse()
+    
+    # 确保路径是从S开始的（如果S和D是同一个点或者S无法到达D，回溯可能会出问题）
+    if not path or path[0] != S:
+         return "无法从机场 {} 到达机场 {}。".format(S, D), -1
+
+    return path, distances[D]
+
+
+# --- 示例 ---
+# N=5个机场 (0, 1, 2, 3, 4)
+# M=7条航线
+N = 5
+flights = [
+    (0, 1, 10),
+    (0, 2, 3),
+    (1, 3, 2),
+    (2, 1, 4),
+    (2, 3, 8),
+    (2, 4, 2),
+    (3, 4, 5)
+]
+S = 0  # 出发机场
+D = 4  # 目标机场
+
+path, total_cost = dijkstra_flight_path(N, flights, S, D)
+
+if total_cost != -1:
+    print(f"从机场 {S} 到机场 {D} 的最低成本航线:")
+    print(f"路径: {' -> '.join(map(str, path))}")
+    print(f"总成本: {total_cost}")
+else:
+    print(path)
+
+# --- 另一个无法到达的示例 ---
+S_unreachable = 4
+D_unreachable = 0
+path_un, cost_un = dijkstra_flight_path(N, flights, S_unreachable, D_unreachable)
+print("\n--- 测试无法到达的情况 ---")
+if cost_un != -1:
+    print(f"路径: {' -> '.join(map(str, path_un))}, 成本: {cost_un}")
+else:
+    print(path_un)
