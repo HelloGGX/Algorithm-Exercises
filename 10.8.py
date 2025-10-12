@@ -388,47 +388,6 @@ if __name__ == "__main__":
 
 要求：必须使用优先队列（最小堆）来优化Dijkstra算法的效率。如果无法从 S 到达 D，则返回相应的提示。
 """
-<<<<<<< HEAD
-import collections
-import heapq
-
-def dijkstra_flight_path(N, flights, S, D):
-    """
-    使用Dijkstra算法和优先队列寻找从S到D的最低成本航线。
-
-    参数:
-    N (int): 机场数量
-    flights (list of tuples): 航线列表, 每个元组为 (u, v, w)
-    S (int): 出发机场
-    D (int): 目标机场
-
-    返回:
-    一个元组，包含路径列表和总成本，或者在无法到达时返回提示信息。
-    """
-    # 1. 构建图的邻接表表示
-    # graph[u] = [(v1, w1), (v2, w2), ...]
-    graph = collections.defaultdict(list)
-    for u, v, w in flights:
-        graph[u].append((v, w))
-    
-    # 2. 初始化
-    # distances[i] 存储从 S 到 i 的当前已知最低成本
-    distances = [float('inf')] * N
-    # predecessors[i] 存储到达 i 的最短路径上的前一个节点
-    predecessors = [-1] * N
-    
-    # 起点到自身的成本为 0
-    distances[S] = 0
-    
-    # 优先队列，存储 (成本, 机场节点)
-    # 初始时只包含起点
-    pq = [(0, S)]
-    
-    # 3. 核心循环
-    while pq:
-        # 弹出当前已知距离起点最近的节点
-        current_cost, current_node = heapq.heappop(pq)
-=======
 
 import collections
 import heapq
@@ -550,7 +509,6 @@ if __name__ == '__main__':
         
 
                 
->>>>>>> 7ce44a6b7ffcc159a2b710f3d71e25c7594dec7a
         
         # 如果这个节点是目标，我们可以提前结束（可选优化）
         if current_node == D:
