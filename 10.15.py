@@ -54,3 +54,37 @@ grid = [
 ]
 steps = shortest_path_in_terminal(grid)
 print(f"从'S'到'E'的最少步数是: {steps}") # 期望输出: 7
+
+
+
+import torch
+import torch.nn as nn
+
+vocab_size = 1000
+embedding_dim = 128
+hidden_dim = 256
+output_size = 2
+
+class SentimentLSTM(nn.Module):
+    def __init__(self):
+        super(SentimentLSTM, self).__init__()
+        # 1. 词典层
+        self.embedding = nn.Embedding(vocab_size, embedding_dim)
+        # 2. 记忆引擎层
+        self.lstm = nn.LSTM(embedding_dim, hidden_dim, batch_first=True)
+        # 3. 决策层
+        self.fc = nn.Linear(hidden_dim, output_size)
+
+    def forward(self, x):
+        embeds = self.embedding(x)
+        lstm_out, _ = self.lstm(embeds)
+        last_output = lstm_out[:, -1, :]
+        out = self.fc(last_output)
+        return out
+
+# --- 测试你的模型 ---
+model = SentimentLSTM()
+dummy_input = torch.randint(0, vocab_size, (5, 10))
+output = model(dummy_input)
+print("模型输出形状:", output.shape) # 期望: torch.Size([5, 2])
+print("模型输出示例:", output)
