@@ -1,3 +1,7 @@
+import heapq
+from collections import defaultdict
+
+
 """
 第一题：机场登机口动态分配 (问题建模与模拟 - 红灯区 🚨)
 
@@ -38,54 +42,31 @@ t=5: 登机口0空闲。等待队列中有飞机1(t=1请求)和飞机2(t=3请求
 t=8: 登机口0空闲。等待队列中只有飞机2。分配给飞机2。飞机2开始使用登机口。登机口0将在 8 + 4 = 12 时刻空闲。
 
 t=12: 所有飞机都已完成。最晚完成时间是12。
-
-考纲对应: 队列/堆应用，资源排队，调度模拟。 训练目标: 强制运用“五步建模法”，精确模拟时间和多个资源（登机口）的状态。你需要追踪每个登机口的空闲时间，以及一个等待队列（用什么数据结构最高效？）。
 """
 
-import heapq
-from collections import defaultdict 
 
-def gate_assign(G:int, flights:list[list[int]]) -> int:
-  
-  if not flights:
-    return 0
-  
-  flights.sort(key=lambda x: x[0])
-  gates = defaultdict()
-  
-  # [(request_time, required_gate_time)]
-  on_wait = flights
-  heapq.heapify(on_wait)
-  
-  deliver_flight = 0
-  n = len(flights)
-  
-  while deliver_flight < n:
-    
-    for i in range(G):
-      request_time, required_gate_time = heapq.heappop(on_wait)
-      # 如果有通道空闲
-      if not gates[i]:
-        gates[i] = (request_time, required_gate_time)
-        deliver_flight += 1
-    
-    
-  
-  
-  
-  
-  
+def gate_assign(G: int, flights: list[list[int]]) -> int:
 
-  
-      
-         
-         
-       
-       
-    
-  
-  
-    
- 
-  
-    
+    if not flights:
+        return 0
+
+    flights.sort(key=lambda x: x[0])
+
+    # 使用最小堆维护 (gate_finish_time, gate_id)
+    gate_heap = [(0, i) for i in range(G)]
+    heapq.heapify(gate_heap)
+
+    max_finish_time = 0
+
+    for req_time, duration in flights:
+        gate_finish_time, gate_id = heapq.heappop(gate_heap)
+        start_time = max(req_time, gate_finish_time)
+        finish_time = start_time + duration
+
+        max_finish_time = max(max_finish_time, finish_time)
+        heapq.heappush(gate_heap, (finish_time, gate_id))
+
+    return max_finish_time
+
+
+gate_assign(1, [[0, 5], [1, 3], [3, 4]])
