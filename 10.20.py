@@ -274,19 +274,52 @@ t=10: CPU完成任务1。所有任务结束。
 """
 
 import heapq
-def cpu_schedul(tasks):
-    task_queue = []
+def cpu_scheduler(tasks: list[list[int]]) -> list[int]:
+    n = len(tasks)
+    # 1. 预处理：添加原始索引并按入队时间排序
+    tasks_with_indices = sorted([(tasks[i][0], tasks[i][1], i) for i in range(n)])
     
-    for i, task in enumerate(tasks):
-        while task_queue:
-            if i == (task_queue[0][1]+task_queue[0][0] - 1):
-                heapq
-            
-            
-        # [(2,1)]
-        heapq.heappush(task_queue, (task[1], task[0]))
+    # 模拟时钟周期
+    current_time = 0
+    # 存放已经到达，待处理的任务：(processingTime, enqueueTime, original_index)
+    available_tasks_pq = []
+    task_index = 0
+    result_order = []
+    
+    while len(result_order) < n:
+        # a) 将当前时间可用的任务加入优先队列
+        # 如果当前正在处理的任务的时钟周期还没有走完，就继续存入到优先队列
+        while task_index < n and tasks_with_indices[task_index][0] <= current_time:
+            enq_time, proc_time, orig_idx = tasks_with_indices[task_index]
+            heapq.heappush(available_tasks_pq, (proc_time, enq_time, orig_idx))
+            task_index += 1
         
+        # b) 如果CPU空闲且有任务在等待
+        if not available_tasks_pq and task_index < n:
+            # CPU没事干，队列也没任务，直接快进到下一个任务到达的时间
+            current_time = tasks_with_indices[task_index][0]
+            continue # 重新检查是否有新任务可加入
         
+        if available_tasks_pq:
+            # c) 执行CPU任务, 其实就是弹出
+            proc_time, enq_time, orig_idx = heapq.heappop(available_tasks_pq)
+            result_order.append(orig_idx)
+            # 更新当前时间为任务完成的时间
+            current_time += proc_time
+        elif task_index == n and not available_tasks_pq:
+            # 所有任务都已处理或加入队列，且队列已空
+            break
+
+    return result_order
+            
+# 示例
+tasks = [[1,2], [2,4], [3,2], [4,1]]
+print(f"任务执行顺序: {cpu_scheduler(tasks)}") # 输出: [0, 2, 3, 1]
+
+tasks2 = [[7,10],[7,12],[7,5],[7,4],[7,2]]
+print(f"任务执行顺序: {cpu_scheduler(tasks2)}") # 输出: [4, 3, 2, 0, 1] (按处理时间排序)
+        
+      
         
                 
                 
